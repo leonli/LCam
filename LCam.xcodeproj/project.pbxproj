@@ -14,13 +14,14 @@
 		959AC05D18EEAFE3001B02AD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 959AC05C18EEAFE3001B02AD /* main.m */; };
 		959AC06118EEAFE3001B02AD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 959AC06018EEAFE3001B02AD /* AppDelegate.m */; };
 		959AC06418EEAFE3001B02AD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 959AC06218EEAFE3001B02AD /* Main.storyboard */; };
-		959AC06718EEAFE3001B02AD /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 959AC06618EEAFE3001B02AD /* ViewController.m */; };
+		959AC06718EEAFE3001B02AD /* LCamViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 959AC06618EEAFE3001B02AD /* LCamViewController.m */; };
 		959AC06918EEAFE3001B02AD /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 959AC06818EEAFE3001B02AD /* Images.xcassets */; };
 		959AC07018EEAFE3001B02AD /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 959AC06F18EEAFE3001B02AD /* XCTest.framework */; };
 		959AC07118EEAFE3001B02AD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 959AC05018EEAFE3001B02AD /* Foundation.framework */; };
 		959AC07218EEAFE3001B02AD /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 959AC05418EEAFE3001B02AD /* UIKit.framework */; };
 		959AC07A18EEAFE3001B02AD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 959AC07818EEAFE3001B02AD /* InfoPlist.strings */; };
 		959AC07C18EEAFE3001B02AD /* LCamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 959AC07B18EEAFE3001B02AD /* LCamTests.m */; };
+		959AC08718EEB07F001B02AD /* LCamPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 959AC08618EEB07F001B02AD /* LCamPreviewView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,14 +46,16 @@
 		959AC05F18EEAFE3001B02AD /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		959AC06018EEAFE3001B02AD /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		959AC06318EEAFE3001B02AD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		959AC06518EEAFE3001B02AD /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		959AC06618EEAFE3001B02AD /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		959AC06518EEAFE3001B02AD /* LCamViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LCamViewController.h; sourceTree = "<group>"; };
+		959AC06618EEAFE3001B02AD /* LCamViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LCamViewController.m; sourceTree = "<group>"; };
 		959AC06818EEAFE3001B02AD /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		959AC06E18EEAFE3001B02AD /* LCamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LCamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		959AC06F18EEAFE3001B02AD /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		959AC07718EEAFE3001B02AD /* LCamTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LCamTests-Info.plist"; sourceTree = "<group>"; };
 		959AC07918EEAFE3001B02AD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		959AC07B18EEAFE3001B02AD /* LCamTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LCamTests.m; sourceTree = "<group>"; };
+		959AC08518EEB07F001B02AD /* LCamPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LCamPreviewView.h; path = classes/LCamPreviewView.h; sourceTree = "<group>"; };
+		959AC08618EEB07F001B02AD /* LCamPreviewView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LCamPreviewView.m; path = classes/LCamPreviewView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,8 +118,10 @@
 				959AC05F18EEAFE3001B02AD /* AppDelegate.h */,
 				959AC06018EEAFE3001B02AD /* AppDelegate.m */,
 				959AC06218EEAFE3001B02AD /* Main.storyboard */,
-				959AC06518EEAFE3001B02AD /* ViewController.h */,
-				959AC06618EEAFE3001B02AD /* ViewController.m */,
+				959AC08518EEB07F001B02AD /* LCamPreviewView.h */,
+				959AC08618EEB07F001B02AD /* LCamPreviewView.m */,
+				959AC06518EEAFE3001B02AD /* LCamViewController.h */,
+				959AC06618EEAFE3001B02AD /* LCamViewController.m */,
 				959AC06818EEAFE3001B02AD /* Images.xcassets */,
 				959AC05718EEAFE3001B02AD /* Supporting Files */,
 			);
@@ -249,8 +254,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				959AC06718EEAFE3001B02AD /* ViewController.m in Sources */,
+				959AC06718EEAFE3001B02AD /* LCamViewController.m in Sources */,
 				959AC06118EEAFE3001B02AD /* AppDelegate.m in Sources */,
+				959AC08718EEB07F001B02AD /* LCamPreviewView.m in Sources */,
 				959AC05D18EEAFE3001B02AD /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -379,6 +385,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LCam/LCam-Prefix.pch";
 				INFOPLIST_FILE = "LCam/LCam-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -392,6 +399,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LCam/LCam-Prefix.pch";
 				INFOPLIST_FILE = "LCam/LCam-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -456,6 +464,7 @@
 				959AC08118EEAFE3001B02AD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		959AC08218EEAFE3001B02AD /* Build configuration list for PBXNativeTarget "LCamTests" */ = {
 			isa = XCConfigurationList;
@@ -464,6 +473,7 @@
 				959AC08418EEAFE3001B02AD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
