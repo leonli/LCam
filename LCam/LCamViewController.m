@@ -246,17 +246,17 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
     switch (self.camFlashMode) {
         case AVCaptureFlashModeAuto:
             self.camFlashMode = AVCaptureFlashModeOff;
-            [self.flashButton setTitle:@"闪光:关闭" forState:UIControlStateNormal];
+            [self.flashButton setTitle:@"关闭" forState:UIControlStateNormal];
             break;
             
         case AVCaptureFlashModeOff:
             self.camFlashMode = AVCaptureFlashModeOn;
-            [self.flashButton setTitle:@"闪光:打开" forState:UIControlStateNormal];
+            [self.flashButton setTitle:@"打开" forState:UIControlStateNormal];
             break;
             
         case AVCaptureFlashModeOn:
             self.camFlashMode = AVCaptureFlashModeAuto;
-            [self.flashButton setTitle:@"闪光:自动" forState:UIControlStateNormal];
+            [self.flashButton setTitle:@"自动" forState:UIControlStateNormal];
             break;
             
         default:
