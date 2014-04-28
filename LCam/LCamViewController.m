@@ -24,6 +24,7 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 @property (weak, nonatomic) IBOutlet UIButton *takePhotoButton;
 @property (weak, nonatomic) IBOutlet UIButton *switchCamButton;
 @property (weak, nonatomic) IBOutlet UIButton *flashButton;
+@property (strong, nonatomic) IBOutlet UIToolbar *bottomBar;
 
 
 // Session management.
@@ -41,13 +42,14 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 
 @property (nonatomic) AVCaptureFlashMode camFlashMode;
 
-
-
-
+//
+@property (nonatomic, strong, readonly) UITapGestureRecognizer *singleTap;
+@property (nonatomic, strong) CALayer *focusBox;
 
 @end
 
 @implementation LCamViewController
+@synthesize focusBox = _focusBox;
 
 -(BOOL)prefersStatusBarHidden { return YES; }
 
@@ -106,22 +108,32 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 			[session addOutput:stillImageOutput];
 			[self setStillImageOutput:stillImageOutput];
 		}
-
+        
     });
     
     //default flash mode.
     _camFlashMode = AVCaptureFlashModeAuto;
+    [self createGesture];
     
+    UIToolbar *toolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 90, 320, 90)];
+    toolbar.barTintColor = [UIColor colorWithRed:100/255.0f green:168/255.0f blue:192/255.0f alpha:1];
+    [self.view insertSubview:toolbar aboveSubview:self.previewView];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    
+    [super viewWillAppear:animated];
+    
     dispatch_async([self sessionQueue], ^{
         
         [self addObserver:self forKeyPath:@"sessionRunningAndDeviceAuthorized" options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:SessionRunningAndDeviceAuthorizedContext];
-       
+        
         [self addObserver:self forKeyPath:@"stillImageOutput.capturingStillImage" options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:CapturingStillImageContext];
         
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(subjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:[[self videoDeviceInput] device]];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(subjectAreaDidChange:)
+                                                     name:AVCaptureDeviceSubjectAreaDidChangeNotification
+                                                   object:[[self videoDeviceInput] device]];
         
         __weak LCamViewController *weakSelf = self;
 		[self setRuntimeErrorHandlingObserver:[[NSNotificationCenter defaultCenter] addObserverForName:AVCaptureSessionRuntimeErrorNotification object:[self session] queue:nil usingBlock:^(NSNotification *note) {
@@ -135,6 +147,19 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
         
         [[self session] startRunning];
     });
+    
+    // add by Damon
+    if ( !_focusBox ) {
+        _focusBox = [[CALayer alloc] init];
+        [_focusBox setCornerRadius:45.0f];
+        [_focusBox setBounds:CGRectMake(0.0f, 0.0f, 90, 90)];
+        [_focusBox setBorderWidth:5.f];
+        [_focusBox setBorderColor:[[UIColor colorWithRed:100/255.0f green:168/255.0f blue:192/255.0f alpha:1] CGColor]];
+        [_focusBox setOpacity:0];
+        [self.previewView.layer addSublayer:_focusBox];
+    }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(detectOrientation) name:@"UIDeviceOrientationDidChangeNotification" object:nil];
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -211,7 +236,7 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 			
 		});
 	});
-
+    
 }
 
 - (void) runSwitchCamAnimationWithPosion: (AVCaptureDevicePosition) position {
@@ -241,7 +266,7 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 
 
 - (IBAction)changeFlash:(id)sender {
-   
+    
     
     switch (self.camFlashMode) {
         case AVCaptureFlashModeAuto:
@@ -282,8 +307,10 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
         {
             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
             UIImage *image = [[UIImage alloc] initWithData:imageData];
+            self.imageView.contentMode = UIViewContentModeScaleAspectFill;
+            self.imageView.clipsToBounds = YES;
             [self.imageView setImage:image];
-     
+            
         }
     }];
     
@@ -366,6 +393,13 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 {
 	CGPoint devicePoint = CGPointMake(.5, .5);
 	[self focusWithMode:AVCaptureFocusModeContinuousAutoFocus exposeWithMode:AVCaptureExposureModeContinuousAutoExposure atDevicePoint:devicePoint monitorSubjectAreaChange:NO];
+    
+    BOOL adjusting = [self.videoDeviceInput.device isAdjustingFocus];
+    if (!adjusting) {
+        NSLog(@"I have focus");
+    } else {
+        NSLog(@"NOT");
+    }
 }
 
 - (void)focusWithMode:(AVCaptureFocusMode)focusMode exposeWithMode:(AVCaptureExposureMode)exposureMode atDevicePoint:(CGPoint)point monitorSubjectAreaChange:(BOOL)monitorSubjectAreaChange
@@ -393,6 +427,141 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 			NSLog(@"%@", error);
 		}
 	});
+}
+
+- (void)createGesture
+{
+    _singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector( tapToFocus: )];
+    [_singleTap setDelaysTouchesEnded:NO];
+    [_singleTap setNumberOfTapsRequired:1];
+    [_singleTap setNumberOfTouchesRequired:1];
+    [self.previewView addGestureRecognizer:_singleTap];
+}
+
+- (void)tapToFocus:(UIGestureRecognizer *)recognizer
+{
+    CGPoint tempPoint = (CGPoint)[recognizer locationInView:self.previewView];
+    NSLog(@"tap point %@", NSStringFromCGPoint(tempPoint));
+    if ( [self respondsToSelector:@selector(cameraView:focusAtPoint:)] && CGRectContainsPoint(self.previewView.frame, tempPoint) )
+        [self cameraView:self.previewView focusAtPoint:(CGPoint){ tempPoint.x, tempPoint.y - CGRectGetMinY(self.previewView.frame)}];
+}
+
+- (void)cameraView:(UIView *)camera focusAtPoint:(CGPoint)point
+{
+    if ( self.videoDeviceInput.device.isFocusPointOfInterestSupported ) {
+        CGPoint focusPoint = [self convertToPointOfInterestFrom:self.previewView.layer.frame coordinates:point layer:(AVCaptureVideoPreviewLayer *)(self.previewView.layer)];
+        NSLog(@"focus point %@", NSStringFromCGPoint(focusPoint));
+        [self focusAtPoint:focusPoint];
+        [self drawFocusBoxAtPointOfInterest:point andRemove:YES];
+    }
+}
+
+- (CGPoint)convertToPointOfInterestFrom:(CGRect)frame coordinates:(CGPoint)viewCoordinates layer:(AVCaptureVideoPreviewLayer *)layer
+{
+    CGPoint pointOfInterest = (CGPoint){ 0.5f, 0.5f };
+    CGSize frameSize = frame.size;
+    
+    AVCaptureVideoPreviewLayer *videoPreviewLayer = layer;
+    
+    if ( [[videoPreviewLayer videoGravity] isEqualToString:AVLayerVideoGravityResize] )
+        pointOfInterest = (CGPoint){ viewCoordinates.y / frameSize.height, 1.0f - (viewCoordinates.x / frameSize.width) };
+    else {
+        CGRect cleanAperture;
+        for (AVCaptureInputPort *port in self.videoDeviceInput.ports) {
+            if ([port mediaType] == AVMediaTypeVideo) {
+                cleanAperture = CMVideoFormatDescriptionGetCleanAperture([port formatDescription], YES);
+                CGSize apertureSize = cleanAperture.size;
+                CGPoint point = viewCoordinates;
+                
+                CGFloat apertureRatio = apertureSize.height / apertureSize.width;
+                CGFloat viewRatio = frameSize.width / frameSize.height;
+                CGFloat xc = 0.5f;
+                CGFloat yc = 0.5f;
+                
+                if ( [[videoPreviewLayer videoGravity] isEqualToString:AVLayerVideoGravityResizeAspect] ) {
+                    if (viewRatio > apertureRatio) {
+                        CGFloat y2 = frameSize.height;
+                        CGFloat x2 = frameSize.height * apertureRatio;
+                        CGFloat x1 = frameSize.width;
+                        CGFloat blackBar = (x1 - x2) / 2;
+                        if (point.x >= blackBar && point.x <= blackBar + x2) {
+                            xc = point.y / y2;
+                            yc = 1.0f - ((point.x - blackBar) / x2);
+                        }
+                    } else {
+                        CGFloat y2 = frameSize.width / apertureRatio;
+                        CGFloat y1 = frameSize.height;
+                        CGFloat x2 = frameSize.width;
+                        CGFloat blackBar = (y1 - y2) / 2;
+                        if (point.y >= blackBar && point.y <= blackBar + y2) {
+                            xc = ((point.y - blackBar) / y2);
+                            yc = 1.0f - (point.x / x2);
+                        }
+                    }
+                } else if ([[videoPreviewLayer videoGravity] isEqualToString:AVLayerVideoGravityResizeAspectFill]) {
+                    if (viewRatio > apertureRatio) {
+                        CGFloat y2 = apertureSize.width * (frameSize.width / apertureSize.height);
+                        xc = (point.y + ((y2 - frameSize.height) / 2.0f)) / y2;
+                        yc = (frameSize.width - point.x) / frameSize.width;
+                    } else {
+                        CGFloat x2 = apertureSize.height * (frameSize.height / apertureSize.width);
+                        yc = 1.0f - ((point.x + ((x2 - frameSize.width) / 2)) / x2);
+                        xc = point.y / frameSize.height;
+                    }
+                }
+                
+                pointOfInterest = (CGPoint){ xc, yc };
+                break;
+            }
+        }
+    }
+    
+    return pointOfInterest;
+}
+
+- (void)focusAtPoint:(CGPoint)point
+{
+    AVCaptureDevice *device = self.videoDeviceInput.device;
+    if ( device.isFocusPointOfInterestSupported && [device isFocusModeSupported:AVCaptureFocusModeAutoFocus] ) {
+        NSError *error;
+        if ( [device lockForConfiguration:&error] ) {
+            device.focusPointOfInterest = point;
+            device.focusMode = AVCaptureFocusModeAutoFocus;
+            device.exposurePointOfInterest = point;
+            device.exposureMode = AVCaptureExposureModeContinuousAutoExposure;
+            [device unlockForConfiguration];
+        } else {
+            NSLog(@"focus error %@", error);
+        }
+    }
+}
+
+- (void)drawFocusBoxAtPointOfInterest:(CGPoint)point andRemove:(BOOL)remove
+{
+    if ( remove )
+        [_focusBox removeAllAnimations];
+    
+    if ( [_focusBox animationForKey:@"transform.scale"] == nil && [_focusBox animationForKey:@"opacity"] == nil ) {
+        [CATransaction begin];
+        [CATransaction setValue: (id) kCFBooleanTrue forKey: kCATransactionDisableActions];
+        [_focusBox setPosition:point];
+        [CATransaction commit];
+        
+        CABasicAnimation *scale = [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+        [scale setFromValue:[NSNumber numberWithFloat:1]];
+        [scale setToValue:[NSNumber numberWithFloat:0.5]];
+        [scale setDuration:0.8];
+        [scale setRemovedOnCompletion:YES];
+        
+        CABasicAnimation *opacity = [CABasicAnimation animationWithKeyPath:@"opacity"];
+        [opacity setFromValue:[NSNumber numberWithFloat:1]];
+        [opacity setToValue:[NSNumber numberWithFloat:0]];
+        [opacity setDuration:0.8];
+        [opacity setRemovedOnCompletion:YES];
+        
+        [_focusBox addAnimation:scale forKey:@"transform.scale"];
+        [_focusBox addAnimation:opacity forKey:@"opacity"];
+    }
 }
 
 - (void)checkDeviceAuthorizationStatus
@@ -426,6 +595,31 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (void)detectOrientation
+{
+    if ([[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft) {
+        [UIView animateWithDuration:0.25 delay:0.4 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            CGAffineTransform rotate = CGAffineTransformMakeRotation(M_PI/2);
+            [self.flashButton setTransform:rotate];
+            [self.switchCamButton setTransform:rotate];
+        } completion:nil];
+    } else if ([[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight) {
+        [UIView animateWithDuration:0.25 delay:0.4 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            CGAffineTransform rotate = CGAffineTransformMakeRotation(1.5*M_PI);
+            [self.flashButton setTransform:rotate];
+            [self.switchCamButton setTransform:rotate];
+        } completion:nil];
+    } else if ([[UIDevice currentDevice] orientation] == UIDeviceOrientationPortrait) {
+        [UIView animateWithDuration:0.25 delay:0.4 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            CGAffineTransform rotate = CGAffineTransformMakeRotation(0);
+            [self.flashButton setTransform:rotate];
+            [self.switchCamButton setTransform:rotate];
+        } completion:nil];
+    } else {
+        
+    }
 }
 
 @end
