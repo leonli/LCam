@@ -154,7 +154,7 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
         [_focusBox setCornerRadius:45.0f];
         [_focusBox setBounds:CGRectMake(0.0f, 0.0f, 90, 90)];
         [_focusBox setBorderWidth:5.f];
-        [_focusBox setBorderColor:[[[UIColor whiteColor] colorWithAlphaComponent:0.75] CGColor]];
+        [_focusBox setBorderColor:[[UIColor colorWithRed:100/255.0f green:168/255.0f blue:192/255.0f alpha:1] CGColor]];
         [_focusBox setOpacity:0];
         [self.previewView.layer addSublayer:_focusBox];
     }
@@ -604,21 +604,18 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
             CGAffineTransform rotate = CGAffineTransformMakeRotation(M_PI/2);
             [self.flashButton setTransform:rotate];
             [self.switchCamButton setTransform:rotate];
-            [self.imageView setTransform:rotate];
         } completion:nil];
     } else if ([[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeRight) {
         [UIView animateWithDuration:0.25 delay:0.4 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             CGAffineTransform rotate = CGAffineTransformMakeRotation(1.5*M_PI);
             [self.flashButton setTransform:rotate];
             [self.switchCamButton setTransform:rotate];
-            [self.imageView setTransform:rotate];
         } completion:nil];
     } else if ([[UIDevice currentDevice] orientation] == UIDeviceOrientationPortrait) {
         [UIView animateWithDuration:0.25 delay:0.4 options:UIViewAnimationOptionCurveEaseInOut animations:^{
             CGAffineTransform rotate = CGAffineTransformMakeRotation(0);
             [self.flashButton setTransform:rotate];
             [self.switchCamButton setTransform:rotate];
-            [self.imageView setTransform:rotate];
         } completion:nil];
     } else {
         
