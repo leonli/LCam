@@ -307,6 +307,10 @@ static void * SessionRunningAndDeviceAuthorizedContext = &SessionRunningAndDevic
         {
             NSData *imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
             UIImage *image = [[UIImage alloc] initWithData:imageData];
+            if (self.videoDeviceInput.device.position == AVCaptureDevicePositionFront) {
+                image = [[UIImage alloc] initWithCGImage:image.CGImage scale:2.0 orientation:UIImageOrientationLeftMirrored];
+            }
+            
             self.imageView.contentMode = UIViewContentModeScaleAspectFill;
             self.imageView.clipsToBounds = YES;
             [self.imageView setImage:image];
